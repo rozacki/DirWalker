@@ -1,1 +1,1 @@
-<td>{{.Mode}}</td><td>{{.Name}}</td><td>{{.Size}}</td><td>{{.ModTime}}</td>
+<td>{{.Mode}}</td><td><a href="?dir={{.Path}}">{{.Name}}</a></td><td>{{.Size}}</td><td>{{.ModTime}}</td>

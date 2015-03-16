@@ -1,10 +1,10 @@
 package main
 /*
-Todo:unit tests and benchamrks
+Todo:unit tests and benchmarks
 
-gerkin: goconvey
-upload to github
-issue tracker
+havealook:gerkin goconvey
+
+fileptah.EvalSymLinks
  */
 import (
 	"fmt"
@@ -35,11 +35,11 @@ const (
 	ModeCharDeviceTemplateName string = "c"
 	ModeStickyTemplateName     string = "t"
 
-	StartingFolder string = "/Users/chrisrozacki/Desktop/music/brian  eno/brian eno - 1973 here come the warm jets"
+	StartingFolder 				string = "/Users/chrisrozacki/Desktop/music/brian  eno/brian eno - 1973 here come the warm jets"
 	HeaderTemplateName			string="header"
 	FooterTemplateName			string="footer"
 	ItemStartTemplateName		string="item_start"
-	ItemEndTemplateName		string="item_end"
+	ItemEndTemplateName			string="item_end"
 )
 
 //walker mainly keeps
@@ -106,33 +106,44 @@ func CreateDirWalker(debug bool) DirWalker {
 }
 
 func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "text/html")
 
-	self.Templates[HeaderTemplateName].Execute(w,nil)
+	debug := false
+	if _, ok := r.URL.Query()["debug"]; ok {
+		debug = true
+	}
+	dir:="/"
+	dirs:=r.URL.Query()["dir"]
+	if dirs!=nil{
+		dir=filepath.Clean(dirs[0])
+		log.Println("dir=%s",dir)
+	}
+	items,err:=	ioutil.ReadDir(dir)
+	if err!=nil{
+		if items,err=ioutil.ReadDir("/");err!=nil{
+			panic(err)
+		}
+	}
 
-	items,err:=	ioutil.ReadDir("/")
+	self.Templates[HeaderTemplateName].Execute(w,map[string]string{"Path":dir})
 
 	for _,info:= range	items {
-
 		log.Printf("%+v\n", info)
 		log.Println(err)
-		debug := false
-		if _, ok := r.URL.Query()["debug"]; ok {
-			debug = true
-		}
 
 		if debug {
 			w.Write([]byte(fmt.Sprintf("%+v\n", info)))
 		}
 
 		//convert struct to map and send it to the template
-		infoMap := map[string]string{
-		"Name":    info.Name(),
-		"Size":    strconv.FormatInt(info.Size(), 10),
-		"IsDir":   strconv.FormatBool(info.IsDir()),
-		"Mode":    info.Mode().String(),
-		"ModTime": info.ModTime().Format(ModTimelayout),
+		infoMap := map[string]interface{}{
+		"Name":    	info.Name(),
+		"Size":    	strconv.FormatInt(info.Size(), 10),
+		"IsDir":   	strconv.FormatBool(info.IsDir()),
+		"Mode":    	info.Mode().String(),
+		"ModTime": 	info.ModTime().Format(ModTimelayout),
+		"Path": 	filepath.Join(dir,info.Name()),
+		"Paths":	[...]string{"a","b"},
 		}
 
 		var tmpl *template.Template = nil
