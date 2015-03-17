@@ -16,10 +16,12 @@ import (
 	"strconv"
 	"reflect"
 	"io/ioutil"
+	_ "sort"
 )
 
 //all types of resources we can be dealing with
 const (
+	AppName						string="DirWalker"
 	DefaultTemplateString      string = "<td>{{.Mode}}</td><td>{{.Name}}</td><td>{{.Size}}</td><td>{{.ModTime}}</td>"
 	DefaultTemplateName        string = "x"//unique name, if user want he can override default template with x template name
 	FileTemplateName		   string="-"
@@ -116,7 +118,7 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	dirs:=r.URL.Query()["dir"]
 	if dirs!=nil{
 		dir=filepath.Clean(dirs[0])
-		log.Println("dir=%s",dir)
+		log.Printf("dir=%s\n",dir)
 	}
 	items,err:=	ioutil.ReadDir(dir)
 	if err!=nil{
@@ -125,7 +127,14 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	self.Templates[HeaderTemplateName].Execute(w,map[string]string{"Path":dir})
+	dirs=	make([]string,0)
+	SplitPath(dir,&dirs)
+
+	infoMap:=map[string]interface{}{
+		"Path":dir,
+		"Paths":dirs,
+	}
+	self.Templates[HeaderTemplateName].Execute(w,infoMap)
 
 	for _,info:= range	items {
 		log.Printf("%+v\n", info)
@@ -143,7 +152,6 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Mode":    	info.Mode().String(),
 		"ModTime": 	info.ModTime().Format(ModTimelayout),
 		"Path": 	filepath.Join(dir,info.Name()),
-		"Paths":	[...]string{"a","b"},
 		}
 
 		var tmpl *template.Template = nil
@@ -177,37 +185,23 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 const ModTimelayout = "Jan 2, 2006 at 3:04pm"
 
-func WalkDirHtml(w http.ResponseWriter, r *http.Request) {
-	err := filepath.Walk("/Users/chrisrozacki/Desktop/music/brian  eno/brian eno - 1973 here come the warm jets", func(path string, info os.FileInfo, err error) error {
-		tmpl, err := template.New("test").Parse("<h3>Name</h3> - {{.Name}}	Size	-	{{.Size}}		IsDir	-	{{.IsDir}}	Mode	-	{{.Mode}}	ModTime	-	{{.ModTine}}</br>")
-		/*
-			Name() string       // base name of the file
-			Size() int64        // length in bytes for regular files; system-dependent for others
-			Mode() FileMode     // file mode bits
-			ModTime() time.Time // modification time
-			IsDir() bool        // abbreviation for Mode().IsDir()
-			Sys() interface{}
-		*/
-
-		m := map[string]string{
-			"Name":    info.Name(),
-			"Size":    strconv.FormatInt(info.Size(), 10),
-			"IsDir":   strconv.FormatBool(info.IsDir()),
-			"Mode":    strconv.FormatUint(uint64(info.Mode()), 10),
-			"ModTime": info.ModTime().Format(ModTimelayout),
+func SplitPath(path string,dirs* []string){
+	*dirs=append(*dirs,path)
+	log.Println(path," ", len(path))
+	//if nothing left then we stop
+	if len(path)<=1{
+		if len(path)==0 {
+			*dirs = append(*dirs, "/")
 		}
-		w.Header().Set("Content-Type", "text/html")
-		err = tmpl.Execute(w, m)
-
-		return nil
-	})
-	log.Println(err)
+		return;
+	}
+	element:=filepath.Base(path)
+	fmt.Println(element)
+	//starting index:ending index
+	path=path[0:(len(path)-len(element))-1]
+	SplitPath(path,dirs)
 }
 
-func WalkFunc(path string, info os.FileInfo, err error) error {
-	fmt.Println(path, info, err)
-	return nil
-}
 
 func PrintFileModes(){
 	/*fmt.Println(os.ModeAppend,os.ModeExclusive,os.ModeTemporary,
@@ -223,16 +217,13 @@ func PrintFileModes(){
 
 
 func main() {
-
 	PrintFileModes();
 
-	log.Println("staring SYSInfo")
+	log.Println("staring ", AppName)
 
 	dw := CreateDirWalker(true)
 
-
-	http.HandleFunc("/a", WalkDirHtml)
-	http.Handle("/b", &dw)
+	http.Handle("/", &dw)
 
 	err := http.ListenAndServe(":8080", nil)
 

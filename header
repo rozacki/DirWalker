@@ -1,6 +1,7 @@
 {{.Path}}
+</br>
 {{range $dir:=.Paths}}
-<a href="{{$dir}}">link</a>
+<a href="?dir={{$dir}}">{{$dir}}</a> >>
 {{end}}
 <table border=1>
 <tr><th>Name</th><th>Size</th><th>Mode</th><th>ModTime</th></tr>
