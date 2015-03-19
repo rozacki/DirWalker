@@ -6,6 +6,8 @@ havealook:gerkin goconvey
 Todo:unit tests and benchmarks
 Todo:error handling
 Todo:graceful shutdown via signals
+Todo: error messages
+Todo: fileviewer
 */
 import (
 	"flag"
