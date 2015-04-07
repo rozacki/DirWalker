@@ -19,7 +19,10 @@ func (self* JSONWriter) SetSessionWriter(w http.ResponseWriter){
 
 func (self JSONWriter) WriteHeader(w http.ResponseWriter, item Item) error{
 	w.Header().Set("Content-type","application/json")
-	w.Write([]byte("{\"items\":["))
+	w.Write([]byte("{\"header\":"))
+	j,_:=json.Marshal(item)
+	w.Write(j)
+	w.Write([]byte(",\"items\":["))
 	return nil
 }
 

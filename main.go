@@ -123,7 +123,7 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	infoMap := map[string]interface{}{
 		"Path":  dir,
-		"Paths": dirs,
+		"Breadcrumb": dirs,
 	}
 	self.WriterA.WriteHeader(w, infoMap)
 
@@ -193,7 +193,7 @@ func main() {
 	port 	:= flag.Int("port", 8080, "")
 	debug 	:= flag.Bool("debug", false, "")
 	urlPath	:=flag.String("path","/","")
-	format:=flag.String("format","json","")
+	format	:=flag.String("format","json","")
 	flag.Parse()
 
 	//initialize the mani structure
