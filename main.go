@@ -79,8 +79,9 @@ func CreateDirWalker(debug bool,format string) DirWalker{
 	case "html":
 		walker.WriterA=&TemplateWriter{}
 		walker.WriterA.Init()
-		log.Println(walker.WriterA.len())
-		//os.Exit(1)
+	case "json":
+		walker.WriterA=&JSONWriter{}
+
 	}
 	return walker
 }
@@ -192,7 +193,7 @@ func main() {
 	port 	:= flag.Int("port", 8080, "")
 	debug 	:= flag.Bool("debug", false, "")
 	urlPath	:=flag.String("path","/","")
-	format:=flag.String("format","html","")
+	format:=flag.String("format","json","")
 	flag.Parse()
 
 	//initialize the mani structure
