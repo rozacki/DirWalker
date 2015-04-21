@@ -190,11 +190,13 @@ func main() {
 
 	//parse command line parameters
 	nic 	:= flag.String("nic", "localhost", "")
+
 	port 	:= flag.Int("port", 8080, "")
 	debug 	:= flag.Bool("debug", false, "")
 	urlPath	:=flag.String("path","/","")
 	format	:=flag.String("format","json","")
 	flag.Parse()
+
 
 	//initialize the mani structure
 	dw := CreateDirWalker(*debug,*format)
