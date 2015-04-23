@@ -17,12 +17,13 @@ func (self* JSONWriter) SetSessionWriter(w http.ResponseWriter){
 
 }
 
-func (self JSONWriter) WriteHeader(w http.ResponseWriter, item Item) error{
+func (self* JSONWriter) WriteHeader(w http.ResponseWriter, item Item) error{
 	w.Header().Set("Content-type","application/json")
 	w.Write([]byte("{\"header\":"))
 	j,_:=json.Marshal(item)
 	w.Write(j)
 	w.Write([]byte(",\"items\":["))
+	self.First=false
 	return nil
 }
 

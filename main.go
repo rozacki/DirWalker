@@ -87,7 +87,7 @@ func CreateDirWalker(debug bool,format string) DirWalker{
 }
 
 func (self DirWalker) Start(urlPath string,nic string, port int) error{
-	http.Handle(urlPath, &self)
+	http.Handle(urlPath, self)
 
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 
@@ -97,7 +97,7 @@ func (self DirWalker) Start(urlPath string,nic string, port int) error{
 	return nil
 }
 
-func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	/*
 	debug := false
@@ -109,7 +109,7 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	dirs := r.URL.Query()["dir"]
 	if dirs != nil {
 		dir = filepath.Clean(dirs[0])
-		log.Printf("dir=%s\n", dir)
+		//log.Printf("dir=%s\n", dir)
 	}
 	items, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -126,10 +126,9 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Breadcrumb": dirs,
 	}
 	self.WriterA.WriteHeader(w, infoMap)
-
 	for _, info := range items {
-		log.Printf("%+v\n", info)
-		log.Println(err)
+		//log.Printf("%+v\n", info)
+		//log.Println(err)
 
 
 		//convert struct to map and send it to the template
@@ -145,8 +144,6 @@ func (self *DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		self.WriterA.WriteItem(w,infoMap)
 	}
 	self.WriterA.WriteFooter(w,nil)
-
-	log.Println(err)
 }
 
 func SplitPath(path string, dirs *[]string) {
