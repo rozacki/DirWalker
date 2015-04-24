@@ -9,11 +9,11 @@ type JSONWriter struct{
 	First bool
 }
 
-func (self* JSONWriter) Init() error{
+func (self JSONWriter) Init() error{
 	return nil
 }
 
-func (self* JSONWriter) SetSessionWriter(w http.ResponseWriter){
+func (self JSONWriter) SetSessionWriter(w http.ResponseWriter){
 
 }
 
@@ -24,6 +24,7 @@ func (self* JSONWriter) WriteHeader(w http.ResponseWriter, item Item) error{
 	w.Write(j)
 	w.Write([]byte(",\"items\":["))
 	self.First=false
+
 	return nil
 }
 

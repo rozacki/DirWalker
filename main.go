@@ -72,8 +72,9 @@ type DirWalker struct {
 	WriterA Writer
 }
 
-func CreateDirWalker(debug bool,format string) DirWalker{
+func CreateDirWalker(debug bool,format string) *DirWalker{
 	walker:=DirWalker{}
+	log.Printf("created walker: %p\n",&walker)
 
 	switch format{
 	case "html":
@@ -83,7 +84,8 @@ func CreateDirWalker(debug bool,format string) DirWalker{
 		walker.WriterA=&JSONWriter{}
 
 	}
-	return walker
+	log.Printf("created walker: %p\n",&walker)
+	return &walker
 }
 
 func (self DirWalker) Start(urlPath string,nic string, port int) error{
@@ -99,12 +101,12 @@ func (self DirWalker) Start(urlPath string,nic string, port int) error{
 
 func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	/*
-	debug := false
-	if _, ok := r.URL.Query()["debug"]; ok {
-		debug = true
-	}
-	*/
+	log.Println("=============")
+	log.Printf("dw ponter %p\n",&self)
+	log.Printf("dw ponter %+v\n",self)
+	log.Printf("wd.w %p\n",self.WriterA)
+	log.Printf("wd.w pointer val %+v\n",self.WriterA)
+
 	dir := "/"
 	dirs := r.URL.Query()["dir"]
 	if dirs != nil {
@@ -125,6 +127,7 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Path":  dir,
 		"Breadcrumb": dirs,
 	}
+
 	self.WriterA.WriteHeader(w, infoMap)
 	for _, info := range items {
 		//log.Printf("%+v\n", info)
@@ -148,7 +151,7 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func SplitPath(path string, dirs *[]string) {
 	*dirs = append(*dirs, path)
-	log.Println(path, " ", len(path))
+	//log.Println(path, " ", len(path))
 	//if nothing left then we stop
 	if len(path) <= 1 {
 		if len(path) == 0 {
@@ -158,7 +161,7 @@ func SplitPath(path string, dirs *[]string) {
 	}
 	element := filepath.Base(path)
 	fmt.Println(element)
-	//starting index:ending index
+	//starting index:ending indexs
 	path = path[0 : (len(path)-len(element))-1]
 	SplitPath(path, dirs)
 }
@@ -197,7 +200,7 @@ func main() {
 
 	//initialize the mani structure
 	dw := CreateDirWalker(*debug,*format)
-
+	log.Printf("returne walker: %p ",dw)
 	//star the server
 	err:=	dw.Start(*urlPath ,*nic , *port)
 	if err!=nil{
