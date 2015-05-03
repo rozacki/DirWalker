@@ -20,6 +20,7 @@ func (self JSONWriter) SetSessionWriter(w http.ResponseWriter){
 
 func (self* JSONWriter) WriteHeader(w http.ResponseWriter, item Item, error int, msg string) error{
 	w.Header().Set("Content-type","application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write([]byte(fmt.Sprintf("{\"error\":%d, \"msg\":\"%s\", \"header\":",error,msg)))
 	j,_:=json.Marshal(item)
 	w.Write(j)
