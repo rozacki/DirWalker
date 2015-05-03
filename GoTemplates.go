@@ -83,7 +83,7 @@ func (self TemplateWriter) SetSessionWriter(w http.ResponseWriter){
 
 }
 
-func (self TemplateWriter) WriteHeader(w http.ResponseWriter, item Item) error{
+func (self TemplateWriter) WriteHeader(w http.ResponseWriter, item Item, error int, msg string) error{
 	w.Header().Set("Content-Type", "text/html")
 	self.Templates[HeaderTemplateName].Execute(w, item)
 	return nil

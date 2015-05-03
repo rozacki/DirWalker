@@ -22,7 +22,7 @@ type Writer interface{
 
 	SetSessionWriter(w http.ResponseWriter)
 
-	WriteHeader(w http.ResponseWriter, item Item) error
+	WriteHeader(w http.ResponseWriter, item Item,error int,msg string ) error
 
 	WriteItem(w http.ResponseWriter, item Item) error
 

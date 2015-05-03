@@ -59,7 +59,7 @@ type Error struct{
 	Port int
 	Path string
 }
-//error type implemtns Error() method
+//error type implements Error() method
 func (err Error) Error() string{
 	return fmt.Sprintf("error: %s while listen and server for port %d",err.Err.Error(),err.Port)
 }
@@ -128,11 +128,8 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Breadcrumb": dirs,
 	}
 
-	self.WriterA.WriteHeader(w, infoMap)
+	self.WriterA.WriteHeader(w, infoMap,0,"ok")
 	for _, info := range items {
-		//log.Printf("%+v\n", info)
-		//log.Println(err)
-
 
 		//convert struct to map and send it to the template
 		infoMap := map[string]interface{}{
@@ -161,7 +158,7 @@ func SplitPath(path string, dirs *[]string) {
 	}
 	element := filepath.Base(path)
 	fmt.Println(element)
-	//starting index:ending indexs
+	//starting index:ending indexes
 	path = path[0 : (len(path)-len(element))-1]
 	SplitPath(path, dirs)
 }
