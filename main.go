@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	_ "sort"
+	"sort"
 	"strconv"
 )
 
@@ -39,29 +39,29 @@ const (
 	ModeCharDeviceTemplateName string = "c"
 	ModeStickyTemplateName     string = "t"
 
-	StartingFolder        string = "/Users/chrisrozacki/Desktop/music/brian  eno/brian eno - 1973 here come the warm jets"
-
+	StartingFolder string = "/Users/chrisrozacki/Desktop/music/brian  eno/brian eno - 1973 here come the warm jets"
 
 	ModTimelayout = "Jan 2, 2006 at 3:04pm"
 
 	//error code
 	//log file path
-	LogFileName	string	="log.txt"
+	LogFileName string = "log.txt"
 )
-//error codes
-const(
 
-)
+//error codes
+const ()
+
 //error type
-type Error struct{
-	Op string
-	Err error
+type Error struct {
+	Op   string
+	Err  error
 	Port int
 	Path string
 }
+
 //error type implements Error() method
-func (err Error) Error() string{
-	return fmt.Sprintf("error: %s while listen and server for port %d",err.Err.Error(),err.Port)
+func (err Error) Error() string {
+	return fmt.Sprintf("error: %s while listen and server for port %d", err.Err.Error(), err.Port)
 }
 
 //walker mainly keeps
@@ -72,41 +72,35 @@ type DirWalker struct {
 	WriterA Writer
 }
 
-func CreateDirWalker(debug bool,format string) *DirWalker{
-	walker:=DirWalker{}
-	log.Printf("created walker: %p\n",&walker)
+func CreateDirWalker(debug bool, format string) *DirWalker {
+	walker := DirWalker{}
+	log.Printf("created walker: %p\n", &walker)
 
-	switch format{
+	switch format {
 	case "html":
-		walker.WriterA=&TemplateWriter{}
+		walker.WriterA = &TemplateWriter{}
 		walker.WriterA.Init()
 	case "json":
-		walker.WriterA=&JSONWriter{}
+		walker.WriterA = &JSONWriter{}
 
 	}
-	log.Printf("created walker: %p\n",&walker)
+	log.Printf("created walker: %p\n", &walker)
 	return &walker
 }
 
-func (self DirWalker) Start(urlPath string,nic string, port int) error{
+func (self DirWalker) Start(urlPath string, nic string, port int) error {
 	http.Handle(urlPath, self)
 
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 
 	if err != nil {
-		return Error{Op:"listen and serve",Err:err,Port:port}
+		return Error{Op: "listen and serve", Err: err, Port: port}
 	}
 	return nil
 }
 
 func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	log.Println("=============")
-	log.Printf("dw ponter %p\n",&self)
-	log.Printf("dw ponter %+v\n",self)
-	log.Printf("wd.w %p\n",self.WriterA)
-	log.Printf("wd.w pointer val %+v\n",self.WriterA)
-
+	var ok bool
 	dir := "/"
 	dirs := r.URL.Query()["dir"]
 	if dirs != nil {
@@ -120,15 +114,28 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	sortBy 		:= "name"
+	if len(r.URL.Query()["sort"])>0{
+		sortBy=r.URL.Query()["sort"][0]
+	}
+
+	sortDir	:=	false
+	if _,ok	= r.URL.Query()["dir"];ok{
+		sortDir=true
+	}
+
+	var sortableFileInfo SortableFileInfo = SortableFileInfo{Data: items, SortBy: sortBy, Dir: sortDir}
+	sort.Sort(sortableFileInfo)
+
 	dirs = nil
 	SplitPath(dir, &dirs)
 
 	infoMap := map[string]interface{}{
-		"Path":  dir,
+		"Path":       dir,
 		"Breadcrumb": dirs,
 	}
 
-	self.WriterA.WriteHeader(w, infoMap,0,"ok")
+	self.WriterA.WriteHeader(w, infoMap, 0, "ok")
 	for _, info := range items {
 
 		//convert struct to map and send it to the template
@@ -141,9 +148,9 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"Path":    filepath.Join(dir, info.Name()),
 		}
 
-		self.WriterA.WriteItem(w,infoMap)
+		self.WriterA.WriteItem(w, infoMap)
 	}
-	self.WriterA.WriteFooter(w,nil)
+	self.WriterA.WriteFooter(w, nil)
 }
 
 func SplitPath(path string, dirs *[]string) {
@@ -163,11 +170,11 @@ func SplitPath(path string, dirs *[]string) {
 	SplitPath(path, dirs)
 }
 
-func SetLogFile(logPath string ) error{
+func SetLogFile(logPath string) error {
 
-	f, err:=os.Create(logPath)
-	if err!=nil{
-		return Error{Op:"file open",Err:err,Path:logPath}
+	f, err := os.Create(logPath)
+	if err != nil {
+		return Error{Op: "file open", Err: err, Path: logPath}
 	}
 	defer f.Close()
 
@@ -186,21 +193,20 @@ func main() {
 	//.....
 
 	//parse command line parameters
-	nic 	:= flag.String("nic", "localhost", "")
+	nic := flag.String("nic", "localhost", "")
 
-	port 	:= flag.Int("port", 8080, "")
-	debug 	:= flag.Bool("debug", false, "")
-	urlPath	:=flag.String("path","/","")
-	format	:=flag.String("format","json","")
+	port := flag.Int("port", 8080, "")
+	debug := flag.Bool("debug", false, "")
+	urlPath := flag.String("path", "/", "")
+	format := flag.String("format", "json", "")
 	flag.Parse()
 
-
 	//initialize the mani structure
-	dw := CreateDirWalker(*debug,*format)
-	log.Printf("returne walker: %p ",dw)
+	dw := CreateDirWalker(*debug, *format)
+	log.Printf("returne walker: %p ", dw)
 	//star the server
-	err:=	dw.Start(*urlPath ,*nic , *port)
-	if err!=nil{
+	err := dw.Start(*urlPath, *nic, *port)
+	if err != nil {
 		log.Println(err)
 		log.Println("server will stop")
 		return

@@ -1,24 +1,24 @@
 package main
 
-import(
+import (
+	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
-	"log"
-	"fmt"
 )
-const(
+
+const (
 	HeaderTemplateName    string = "header"
 	FooterTemplateName    string = "footer"
 	ItemStartTemplateName string = "item_start"
 	ItemEndTemplateName   string = "item_end"
 )
 
-type TemplateWriter struct{
-
+type TemplateWriter struct {
 	Templates map[string]*template.Template
 
-	Writer	http.ResponseWriter
+	Writer http.ResponseWriter
 
 	//logger
 	//
@@ -28,8 +28,8 @@ type TemplateWriter struct{
 	Debug bool
 }
 
-func (self* TemplateWriter) Init() error{
-	self.Initiated=true
+func (self *TemplateWriter) Init() error {
+	self.Initiated = true
 	//
 	self.Templates = map[string]*template.Template{
 		//use Stringer and provide template key
@@ -56,7 +56,7 @@ func (self* TemplateWriter) Init() error{
 	//parse the default template of error then panic
 	defaultTemplate, err := template.New(DefaultTemplateName).Parse(DefaultTemplateString)
 	if err != nil {
-		return WriterError{Message: "default template parsing error",Err:err}
+		return WriterError{Message: "default template parsing error", Err: err}
 	}
 
 	for key, _ := range self.Templates {
@@ -79,21 +79,21 @@ func (self* TemplateWriter) Init() error{
 	return nil
 }
 
-func (self TemplateWriter) SetSessionWriter(w http.ResponseWriter){
+func (self TemplateWriter) SetSessionWriter(w http.ResponseWriter) {
 
 }
 
-func (self TemplateWriter) WriteHeader(w http.ResponseWriter, item Item, error int, msg string) error{
+func (self TemplateWriter) WriteHeader(w http.ResponseWriter, item Item, error int, msg string) error {
 	w.Header().Set("Content-Type", "text/html")
 	self.Templates[HeaderTemplateName].Execute(w, item)
 	return nil
 }
 
-func (self TemplateWriter) WriteStartItem(w http.ResponseWriter){
+func (self TemplateWriter) WriteStartItem(w http.ResponseWriter) {
 
 }
 
-func (self TemplateWriter) WriteItem(w http.ResponseWriter, item Item) error{
+func (self TemplateWriter) WriteItem(w http.ResponseWriter, item Item) error {
 
 	var tmpl *template.Template = nil
 	var key string = DefaultTemplateName
@@ -123,14 +123,14 @@ func (self TemplateWriter) WriteItem(w http.ResponseWriter, item Item) error{
 	return err
 }
 
-func (self TemplateWriter) WriteEndItem(w http.ResponseWriter){
+func (self TemplateWriter) WriteEndItem(w http.ResponseWriter) {
 
 }
 
-func (self TemplateWriter) WriteFooter(w http.ResponseWriter, item Item){
+func (self TemplateWriter) WriteFooter(w http.ResponseWriter, item Item) {
 	self.Templates[FooterTemplateName].Execute(w, item)
 }
 
-func (self TemplateWriter) len() int{
+func (self TemplateWriter) len() int {
 	return len(self.Templates)
 }

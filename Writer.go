@@ -1,28 +1,27 @@
 package main
 
-import(
-	"net/http"
+import (
 	"fmt"
+	"net/http"
 )
 
-type Item map[string] interface{}
+type Item map[string]interface{}
 
-type WriterError struct{
-	Err error
+type WriterError struct {
+	Err     error
 	Message string
 }
 
-func (self WriterError) Error() string{
+func (self WriterError) Error() string {
 	return fmt.Sprintf(self.Err.Error())
 }
 
-type Writer interface{
-
+type Writer interface {
 	Init() error
 
 	SetSessionWriter(w http.ResponseWriter)
 
-	WriteHeader(w http.ResponseWriter, item Item,error int,msg string ) error
+	WriteHeader(w http.ResponseWriter, item Item, error int, msg string) error
 
 	WriteItem(w http.ResponseWriter, item Item) error
 
@@ -34,8 +33,6 @@ type Writer interface{
 
 	WriteFooter(w http.ResponseWriter, item Item)
 
-
 	//debug
 	len() int
-
 }
