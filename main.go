@@ -141,7 +141,7 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//convert struct to map and send it to the template
 		infoMap := map[string]interface{}{
 			"Name":    info.Name(),
-			"Size":    strconv.FormatInt(info.Size(), 10),
+			"Size":    info.Size(),
 			"IsDir":   info.IsDir(),
 			"Mode":    info.Mode(),
 			"ModTime": info.ModTime(),
