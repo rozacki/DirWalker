@@ -142,9 +142,9 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		infoMap := map[string]interface{}{
 			"Name":    info.Name(),
 			"Size":    strconv.FormatInt(info.Size(), 10),
-			"IsDir":   strconv.FormatBool(info.IsDir()),
-			"Mode":    info.Mode().String(),
-			"ModTime": info.ModTime().Format(ModTimelayout),
+			"IsDir":   info.IsDir(),
+			"Mode":    info.Mode(),
+			"ModTime": info.ModTime(),
 			"Path":    filepath.Join(dir, info.Name()),
 		}
 
