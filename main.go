@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 //all types of resources we can be dealing with
@@ -119,13 +120,23 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sortBy=r.URL.Query()["sort"][0]
 	}
 
+
+	sorting:=false
 	sortDir	:=	false
 	if _,ok	= r.URL.Query()["sd"];ok{
-		sortDir=true
+		if "asc" == strings.ToLower(r.URL.Query()["sd"][0]){
+			sortDir=true
+			sorting=true
+		}else if "desc" == strings.ToLower(r.URL.Query()["sd"][0]){
+			sortDir=false
+			sorting=true
+		}
 	}
 
-	var sortableFileInfo SortableFileInfo = SortableFileInfo{Data: items, SortBy: sortBy, Dir: sortDir}
-	sort.Sort(sortableFileInfo)
+	if sorting {
+		var sortableFileInfo SortableFileInfo = SortableFileInfo{Data: items, SortBy: sortBy, Dir: sortDir}
+		sort.Sort(sortableFileInfo)
+	}
 
 	dirs = nil
 	SplitPath(dir, &dirs)

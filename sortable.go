@@ -8,6 +8,7 @@ import (
 type SortableFileInfo struct {
 	Data   []os.FileInfo
 	SortBy string
+	//true is asc
 	Dir    bool
 }
 
@@ -26,19 +27,19 @@ func (fi SortableFileInfo) Less(i, j int) bool {
 	switch fi.SortBy {
 	default:
 	case "name":
-		if !fi.Dir {
+		if fi.Dir {
 			return fi.Data[i].Name() < fi.Data[j].Name()
 		} else {
 			return fi.Data[i].Name() > fi.Data[j].Name()
 		}
 	case "size":
-		if !fi.Dir {
+		if fi.Dir {
 			return fi.Data[i].Size() < fi.Data[j].Size()
 		} else {
 			return fi.Data[i].Size() > fi.Data[j].Size()
 		}
 	case "modtime":
-		if !fi.Dir {
+		if fi.Dir {
 			return fi.Data[i].ModTime().Before(fi.Data[j].ModTime())
 		} else {
 			return fi.Data[i].ModTime().After(fi.Data[j].ModTime())
