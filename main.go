@@ -120,7 +120,7 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sortDir	:=	false
-	if _,ok	= r.URL.Query()["dir"];ok{
+	if _,ok	= r.URL.Query()["sd"];ok{
 		sortDir=true
 	}
 
