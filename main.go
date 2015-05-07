@@ -58,6 +58,7 @@ type Error struct {
 	Err  error
 	Port int
 	Path string
+	Code int
 }
 
 //error type implements Error() method
@@ -71,6 +72,8 @@ type DirWalker struct {
 	DebugMode bool
 	//
 	WriterA Writer
+	//var SearchJobWrapper SearchJob=SearchJob{}
+	SearchJob SearchJob
 }
 
 func CreateDirWalker(debug bool, format string) *DirWalker {
@@ -83,13 +86,15 @@ func CreateDirWalker(debug bool, format string) *DirWalker {
 		walker.WriterA.Init()
 	case "json":
 		walker.WriterA = &JSONWriter{}
-
 	}
-	log.Printf("created walker: %p\n", &walker)
+
+	walker.SearchJob	=	SearchJob{ProcessChangeState:make(chan int)}
+	log.Printf("created walker %+v", walker)
+
 	return &walker
 }
 
-func (self DirWalker) Start(urlPath string, nic string, port int) error {
+func (self* DirWalker) Start(urlPath string, nic string, port int) error {
 	http.Handle(urlPath, self)
 
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
@@ -100,7 +105,7 @@ func (self DirWalker) Start(urlPath string, nic string, port int) error {
 	return nil
 }
 
-func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self* DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var ok bool
 	dir := "/"
 	dirs := r.URL.Query()["dir"]
@@ -115,21 +120,36 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sortBy 		:= "name"
-	if len(r.URL.Query()["sort"])>0{
-		sortBy=r.URL.Query()["sort"][0]
+	//define search parameters, if search param is not provided then no search action is triggered
+	searchterm := ""
+	if _, ok = r.URL.Query()["search"]; ok {
+		searchterm = r.URL.Query()["search"][0]
+		items, code, msg := self.SearchJob.Search(searchterm, dir,true)
+
+		self.WriterA.WriteHeader(w, nil, code, msg)
+		for _, item := range items {
+			self.WriterA.WriteItem(w, item)
+		}
+		self.WriterA.WriteFooter(w)
+		return
 	}
 
+	//define sort parameters, always sort, by default use name field
+	sortBy := "name"
+	if _, ok = r.URL.Query()["sort"]; ok {
+		sortBy = r.URL.Query()["sort"][0]
+	}
 
-	sorting:=false
-	sortDir	:=	false
-	if _,ok	= r.URL.Query()["sd"];ok{
-		if "asc" == strings.ToLower(r.URL.Query()["sd"][0]){
-			sortDir=true
-			sorting=true
-		}else if "desc" == strings.ToLower(r.URL.Query()["sd"][0]){
-			sortDir=false
-			sorting=true
+	sorting := false
+
+	sortDir := false
+	if _, ok = r.URL.Query()["sd"]; ok {
+		if "asc" == strings.ToLower(r.URL.Query()["sd"][0]) {
+			sortDir = true
+			sorting = true
+		} else if "desc" == strings.ToLower(r.URL.Query()["sd"][0]) {
+			sortDir = false
+			sorting = true
 		}
 	}
 
@@ -138,30 +158,31 @@ func (self DirWalker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sort.Sort(sortableFileInfo)
 	}
 
+	//split paths for breadcrumb
 	dirs = nil
 	SplitPath(dir, &dirs)
-
 	infoMap := map[string]interface{}{
 		"Path":       dir,
 		"Breadcrumb": dirs,
 	}
-
+	//start writing response
 	self.WriterA.WriteHeader(w, infoMap, 0, "ok")
 	for _, info := range items {
-
-		//convert struct to map and send it to the template
-		infoMap := map[string]interface{}{
-			"Name":    info.Name(),
-			"Size":    info.Size(),
-			"IsDir":   info.IsDir(),
-			"Mode":    info.Mode(),
-			"ModTime": info.ModTime(),
-			"Path":    filepath.Join(dir, info.Name()),
-		}
-
-		self.WriterA.WriteItem(w, infoMap)
+		self.WriterA.WriteItem(w, MakeItem(info, dir))
 	}
-	self.WriterA.WriteFooter(w, nil)
+	self.WriterA.WriteFooter(w)
+}
+
+func MakeItem(info os.FileInfo, path string) Item {
+	//convert struct to map and send it to the template
+	return map[string]interface{}{
+		"Name":    info.Name(),
+		"Size":    info.Size(),
+		"IsDir":   info.IsDir(),
+		"Mode":    info.Mode(),
+		"ModTime": info.ModTime(),
+		"Path":    filepath.Join(path, info.Name()),
+	}
 }
 
 func SplitPath(path string, dirs *[]string) {

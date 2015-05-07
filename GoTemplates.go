@@ -127,8 +127,8 @@ func (self TemplateWriter) WriteEndItem(w http.ResponseWriter) {
 
 }
 
-func (self TemplateWriter) WriteFooter(w http.ResponseWriter, item Item) {
-	self.Templates[FooterTemplateName].Execute(w, item)
+func (self TemplateWriter) WriteFooter(w http.ResponseWriter) {
+	self.Templates[FooterTemplateName].Execute(w, nil)
 }
 
 func (self TemplateWriter) len() int {

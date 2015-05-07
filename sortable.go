@@ -9,7 +9,7 @@ type SortableFileInfo struct {
 	Data   []os.FileInfo
 	SortBy string
 	//true is asc
-	Dir    bool
+	Dir bool
 }
 
 func (fi SortableFileInfo) Len() int {
@@ -19,8 +19,8 @@ func (fi SortableFileInfo) Less(i, j int) bool {
 	//default field is name
 	if fi.SortBy == "" {
 		fi.SortBy = "name"
-	}else{
-		fi.SortBy=strings.ToLower(fi.SortBy)
+	} else {
+		fi.SortBy = strings.ToLower(fi.SortBy)
 	}
 
 	//

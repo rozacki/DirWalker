@@ -51,7 +51,7 @@ func (self JSONWriter) WriteEndItem(w http.ResponseWriter) {
 
 }
 
-func (self JSONWriter) WriteFooter(w http.ResponseWriter, item Item) {
+func (self JSONWriter) WriteFooter(w http.ResponseWriter) {
 	w.Write([]byte("]}"))
 }
 

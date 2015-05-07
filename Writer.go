@@ -31,7 +31,7 @@ type Writer interface {
 
 	WriteEndItem(w http.ResponseWriter)
 
-	WriteFooter(w http.ResponseWriter, item Item)
+	WriteFooter(w http.ResponseWriter)
 
 	//debug
 	len() int
