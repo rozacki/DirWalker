@@ -75,7 +75,9 @@ func (self *SearchJob) Search(searchterm, root string, istimeout bool) (items []
 	defer log.SetPrefix("")
 
 	log.Println("searchterm:", searchterm)
-	log.Println("path:", root)
+	log.Println("root:", root)
+	cwd, _:=os.Getwd()
+	log.Println("cwd:",cwd)
 	log.Println("state:", self.State)
 
 	//read the latest status change and unbloxk the procs
@@ -98,7 +100,7 @@ func (self *SearchJob) Search(searchterm, root string, istimeout bool) (items []
 
 		//check if the term is different than before
 		if searchterm != self.Pattern {
-			log.Println("restaring")
+			log.Println("restarting")
 			self.ProcessChangeState <- Terminating
 			//wait for response
 			self.State=<-self.ProcessChangeState
@@ -172,11 +174,13 @@ func (self* SearchJob) SearchProc(searchterm, root string,istimeout bool) {
 func (self *SearchJob) WalkFn(path string, info os.FileInfo, err error) error {
 
 	//<-time.After(time.Second*1)
+	log.Println("sub cwd:",path)
+
 	//why is this true?
 	if info== nil{
 		return nil
 	}
-
+	log.Println("item:",info.Name())
 
 	select {
 	//
